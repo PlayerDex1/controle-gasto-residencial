@@ -1,0 +1,59 @@
+// Schema para PostgreSQL (produção no Vercel)
+// Copie este conteúdo para schema.prisma antes do deploy
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model FixedExpense {
+  id          String   @id @default(cuid())
+  type        String   // "aluguel" | "luz" | "agua" | "internet"
+  amount      Float
+  dueDate     DateTime
+  paid        Boolean  @default(false)
+  paidDate    DateTime?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  month       String   // "YYYY-MM" format
+  year        Int
+}
+
+model MarketPurchase {
+  id          String   @id @default(cuid())
+  totalAmount Float
+  date        DateTime @default(now())
+  store       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  month       String   // "YYYY-MM" format
+  year        Int
+  items       MarketItem[]
+}
+
+model MarketItem {
+  id                String          @id @default(cuid())
+  name              String
+  quantity          Float
+  unit              String          // "kg", "un", "l", etc
+  price             Float
+  totalPrice        Float
+  marketPurchaseId  String
+  marketPurchase    MarketPurchase  @relation(fields: [marketPurchaseId], references: [id], onDelete: Cascade)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+}
+
+model QRCodeData {
+  id        String   @id @default(cuid())
+  type      String   // "fixed_expense" | "market_purchase"
+  data      String   // JSON stringified data
+  createdAt DateTime @default(now())
+  expiresAt DateTime?
+}
+
